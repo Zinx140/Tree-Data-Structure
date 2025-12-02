@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Splay Tree (Array Based)</title>
+    <link rel="stylesheet" href="splay_tree.css">
+</head>
+
+<body>
+    <div class="container">
+        <h1>Simulasi Splay Tree (Array Implementation)</h1>
+
+        <div class="controls">
+            <input type="number" id="nodeValue" placeholder="Angka" autocomplete="off">
+            <button onclick="handleInsert()" class="btn insert">Insert</button>
+            <button onclick="handleSearch()" class="btn search">Search</button>
+            <button onclick="handleDelete()" class="btn delete">Delete</button>
+            <button onclick="handleReset()" class="btn reset">Reset</button>
+        </div>
+
+        <div id="message-box" class="message">Array kosong. Siap operasi...</div>
+
+        <!-- Area Visualisasi Pohon -->
+        <div class="canvas-container">
+            <svg id="tree-svg" width="100%" height="450px"></svg>
+        </div>
+
+        <script src="splay_tree.js"></script>
+</body>
+
+</html>
