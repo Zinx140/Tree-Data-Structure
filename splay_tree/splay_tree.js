@@ -1,377 +1,278 @@
-// --- STRUKTUR DATA ARRAY ---
+splay_tree = [];
 
-// Array untuk menyimpan node.
-// Format item: { value: number, left: index, right: index, parent: index, active: boolean }
-let treeData = []; 
-let root = -1; // Menunjuk ke INDEX di dalam treeData
+let canvas = document.getElementById('canvas');
 
-// Helper untuk membuat node baru di array
-function createNode(value) {
-    const newNode = {
-        value: value,
-        left: -1,   // -1 artinya NULL
-        right: -1,
-        parent: -1,
-        active: true // Penanda apakah node ini "hidup" atau sudah dihapus
-    };
-    treeData.push(newNode);
-    return treeData.length - 1; // Kembalikan indexnya
+canvas.width = window.innerWidth;
+canvas.height = 560;
+
+let drawingPanel = canvas.getContext('2d');
+let width = canvas.width;
+let height = canvas.height;
+
+let insertBox = document.getElementById('insert');
+let searchBox = document.getElementById('search');
+let deleteBox = document.getElementById('delete');
+
+function drawTree(index = 0) {
+    if (index >= splay_tree.length || splay_tree[index] == null) return;
+
+    const canvasWidth = width;
+    const levelHeight = 100;    
+    const topMargin = 80;
+    const RADIUS = 20;
+
+    const depth = Math.floor(Math.log2(index + 1));
+    const levelStartIndex = Math.pow(2, depth) - 1;
+    const positionIndex = index - levelStartIndex;
+    const nodesAtLevel = Math.pow(2, depth);
+    const gapX = canvasWidth / (nodesAtLevel + 1);
+
+    const posX = gapX * (positionIndex + 1);
+    const posY = topMargin + depth * levelHeight;
+
+    const parentIndex = Math.floor((index - 1) / 2);
+    if (index > 0 && parentIndex >= 0) {
+
+        const parentDepth = Math.floor(Math.log2(parentIndex + 1));
+        const parentStartIndex = Math.pow(2, parentDepth) - 1;
+        const parentPosIndex = parentIndex - parentStartIndex;
+        const parentNodesAtLevel = Math.pow(2, parentDepth);
+        const parentGapX = canvasWidth / (parentNodesAtLevel + 1);
+
+        const parentX = parentGapX * (parentPosIndex + 1);
+        const parentY = topMargin + parentDepth * levelHeight;
+
+        const dx = posX - parentX;
+        const dy = posY - parentY;
+        const angle = Math.atan2(dy, dx);
+
+        const startX = parentX + Math.cos(angle) * RADIUS;
+        const startY = parentY + Math.sin(angle) * RADIUS;
+
+        const endX = posX - Math.cos(angle) * RADIUS;
+        const endY = posY - Math.sin(angle) * RADIUS;
+
+        drawingPanel.beginPath();
+        drawingPanel.moveTo(startX, startY);
+        drawingPanel.lineTo(endX, endY);
+        drawingPanel.stroke();
+    }
+
+    if (splay_tree[index] == null) return;
+
+    drawingPanel.beginPath();
+    drawingPanel.fillStyle = "#FF0000";
+    drawingPanel.strokeStyle = "#000000";
+    drawingPanel.arc(posX, posY, RADIUS, 0, Math.PI * 2);
+    drawingPanel.fill();
+    drawingPanel.stroke();
+
+    drawingPanel.fillStyle = "white";
+    drawingPanel.font = "20px Arial";
+    drawingPanel.textAlign = "center";
+    drawingPanel.textBaseline = "middle";
+    drawingPanel.fillText(splay_tree[index], posX, posY);
+
+    drawTree(2 * index + 1);
+    drawTree(2 * index + 2);
 }
 
-// --- LOGIKA SPLAY TREE (ARRAY VERSION) ---
+function computeRequiredCanvasHeight() {
+    if (splay_tree.length === 0) return 300;
 
-// Rotasi Kanan (Zig) pada index x
-function rightRotate(x) {
-    let y = treeData[x].left; // y adalah anak kiri x
+    const lastIndex = splay_tree.length - 1;
+    const depth = Math.floor(Math.log2(lastIndex + 1));
     
-    // x.left = y.right
-    treeData[x].left = treeData[y].right;
+    const topMargin = 80;
+    const levelHeight = 100;
     
-    // Jika y.right bukan null (-1), update parentnya ke x
-    if (treeData[y].right !== -1) {
-        treeData[treeData[y].right].parent = x;
-    }
-    
-    // y.parent = x.parent
-    treeData[y].parent = treeData[x].parent;
-    
-    // Jika x tadinya root
-    if (treeData[x].parent === -1) {
-        root = y;
-    } 
-    // Jika x adalah anak kanan dari parentnya
-    else if (x === treeData[treeData[x].parent].right) {
-        treeData[treeData[x].parent].right = y;
-    } 
-    // Jika x adalah anak kiri dari parentnya
-    else {
-        treeData[treeData[x].parent].left = y;
-    }
-    
-    // y.right = x
-    treeData[y].right = x;
-    // x.parent = y
-    treeData[x].parent = y;
+    return topMargin + depth * levelHeight + 200;
 }
 
-// Rotasi Kiri (Zag) pada index x
-function leftRotate(x) {
-    let y = treeData[x].right; // y adalah anak kanan x
+function computeRequiredCanvasWidth() {
+    if (splay_tree.length === 0) return 500;
     
-    // x.right = y.left
-    treeData[x].right = treeData[y].left;
+    let lastIndex = splay_tree.length - 1;
     
-    // Jika y.left bukan null, update parentnya ke x
-    if (treeData[y].left !== -1) {
-        treeData[treeData[y].left].parent = x;
-    }
+    let depth = Math.floor(Math.log2(lastIndex + 1));
     
-    // y.parent = x.parent
-    treeData[y].parent = treeData[x].parent;
+    let nodesAtLastLevel = Math.pow(2, depth);
     
-    // Jika x tadinya root
-    if (treeData[x].parent === -1) {
-        root = y;
-    } 
-    else if (x === treeData[treeData[x].parent].left) {
-        treeData[treeData[x].parent].left = y;
-    } 
-    else {
-        treeData[treeData[x].parent].right = y;
-    }
+    let gapX = 80;
     
-    // y.left = x
-    treeData[y].left = x;
-    // x.parent = y
-    treeData[x].parent = y;
+    let requiredWidth = (nodesAtLastLevel + 1) * gapX;
+    
+    return Math.max(requiredWidth, window.innerWidth);
 }
 
-// Fungsi Splay: Membawa node pada index 'idx' ke root
-function splay(idx) {
-    if (idx === -1 || !treeData[idx].active) return;
-
-    while (treeData[idx].parent !== -1) {
-        let p = treeData[idx].parent;      // Parent
-        let g = treeData[p].parent;        // Grandparent
-
-        // Case 1: Parent adalah Root (Zig)
-        if (g === -1) {
-            if (treeData[p].left === idx) {
-                rightRotate(p);
-            } else {
-                leftRotate(p);
-            }
-        } 
-        else {
-            // Case 2: Zig-Zig (Kiri-Kiri)
-            if (treeData[g].left === p && treeData[p].left === idx) {
-                rightRotate(g);
-                rightRotate(p);
-            }
-            // Case 3: Zag-Zag (Kanan-Kanan)
-            else if (treeData[g].right === p && treeData[p].right === idx) {
-                leftRotate(g);
-                leftRotate(p);
-            }
-            // Case 4: Zig-Zag (Kiri-Kanan)
-            else if (treeData[g].left === p && treeData[p].right === idx) {
-                leftRotate(p);
-                rightRotate(g);
-            }
-            // Case 5: Zag-Zig (Kanan-Kiri)
-            else { // g.right == p && p.left == idx
-                rightRotate(p);
-                leftRotate(g);
-            }
-        }
-    }
+function prepareCanvas() {
+    const newHeight = computeRequiredCanvasHeight();
+    
+    if (newHeight < 560) return;
+    
+    canvas.height = newHeight;    
+    canvas.width = computeRequiredCanvasWidth();
+    
+    width = canvas.width;  
+    height = canvas.height;
 }
 
-// Insert (BST Logic lalu Splay)
-function insert(value) {
-    if (root === -1) {
-        root = createNode(value);
+function btnAction(action) {
+    switch(action) {
+        case "insert":
+            if (insertBox.value != "") {
+                insertValue(parseInt(insertBox.value));
+                insertBox.value = "";
+            }
+        break;
+        case "search":
+                if (searchBox.value != "") {
+                    searchValue(parseInt(searchBox.value));
+                    searchBox.value = "";
+                }
+            break;
+        case "delete":
+            if (deleteBox.value != "") {
+                deleteValue(parseInt(deleteBox.value));
+                deleteBox.value = "";
+            }
+        break;
+    }
+    
+    clearCanvas();
+    prepareCanvas();
+    drawTree();
+}
+
+function clearCanvas() {
+    drawingPanel.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+function insertValue(value, index = 0) {
+    let num = parseInt(value);
+
+    if (splay_tree.length === 0) {
+        splay_tree.push(num);
+        console.log(splay_tree);
         return;
     }
 
-    let curr = root;
-    let parent = -1;
+    while (index > splay_tree.length) {
+        splay_tree.push(null);
+    }
 
-    // Cari posisi BST
-    while (curr !== -1) {
-        parent = curr;
-        if (value < treeData[curr].value) {
-            curr = treeData[curr].left;
-        } else if (value > treeData[curr].value) {
-            curr = treeData[curr].right;
-        } else {
-            // Duplicate, splay yang ada dan return
-            splay(curr);
-            setMessage("Nilai duplikat, di-splay ke root.", "orange");
+    if (splay_tree[index] == null) {
+        splay_tree[index] = value;
+        console.log(splay_tree);
+        return;
+    }
+
+    if (splay_tree[index] > num) {
+        insertValue(value, 2 * index + 1);
+    } else {
+        insertValue(value, 2 * index + 2);
+    }
+
+}
+
+function splay(index) {
+
+}
+
+function searchValue(value, index = 0) {
+    if (index >= splay_tree.length || splay_tree[index] == null) {
+        let parentIndex = Math.floor((index - 1) / 2);
+        console.log("value not found, nearest at:", parentIndex);
+        return parentIndex;
+    }
+
+    if (splay_tree[index] == value) {
+        console.log("value found at:", index);
+        return index;
+    }
+
+    if (value < splay_tree[index]) {
+        return searchValue(value, 2 * index + 1);
+    }
+
+    return searchValue(value, 2 * index + 2);
+}
+
+function deleteValue(value, index = 0) {
+    if (index >= splay_tree.length || splay_tree[index] == null) {
+        console.log("Number not found");
+        return;
+    }
+
+    current = splay_tree[index];
+
+    if (value < current) {
+        deleteValue(value, index * 2 + 1);
+        return;
+    }
+
+    if (value > current) {
+        deleteValue(value, index * 2 + 2);
+        return;
+    }
+
+    if (current == value) {
+    
+        let left = index * 2 + 1;
+        let right = index * 2 + 2;
+
+        let hasLeft = left < splay_tree.length && splay_tree[left] != null;
+        let hasRight = right < splay_tree.length && splay_tree[right] != null;
+
+        // JIKA LEAF
+        if (!hasLeft && !hasRight) {
+            splay_tree[index] = null;
             return;
         }
-    }
 
-    // Buat node baru di array
-    let newIdx = createNode(value);
-    treeData[newIdx].parent = parent;
-
-    if (value < treeData[parent].value) {
-        treeData[parent].left = newIdx;
-    } else {
-        treeData[parent].right = newIdx;
-    }
-
-    // Splay node baru ke atas
-    splay(newIdx);
-}
-
-// Search
-function search(value) {
-    if (root === -1) return false;
-
-    let curr = root;
-    let lastAccessed = root;
-
-    while (curr !== -1) {
-        if (value === treeData[curr].value) {
-            splay(curr);
-            return true;
+        if (hasLeft && !hasRight) {
+            splay_tree[index] = splay_tree[left];
+            deleteValue(splay_tree[left], left);
+            return;
         }
-        
-        lastAccessed = curr; // Simpan jejak terakhir sebelum null
-        
-        if (value < treeData[curr].value) {
-            curr = treeData[curr].left;
-        } else {
-            curr = treeData[curr].right;
+
+        if (!hasLeft && hasRight) {
+            splay_tree[index] = splay_tree[right];
+            deleteValue(splay_tree[right], right);
+            return;
         }
-    }
 
-    // Jika tidak ketemu, splay node terakhir yang dikunjungi
-    if (lastAccessed !== -1) {
-        splay(lastAccessed);
-    }
-    return false;
-}
-
-// Helper: Mencari Max di subtree (Predecessor logic)
-function findMax(idx) {
-    let curr = idx;
-    while (treeData[curr].right !== -1) {
-        curr = treeData[curr].right;
-    }
-    return curr;
-}
-
-// Delete
-function deleteNode(value) {
-    if (!search(value)) return false; 
-    // search() sudah melakukan Splay target ke Root jika ditemukan.
-    // Jadi sekarang root adalah node yang mau dihapus.
-
-    let target = root; // Index target
-
-    // Jika target tidak punya anak kiri
-    if (treeData[target].left === -1) {
-        root = treeData[target].right;
-        if (root !== -1) treeData[root].parent = -1;
-    } 
-    else {
-        // Ada anak kiri (dan mungkin kanan)
-        // 1. Putuskan link root
-        let leftSubtree = treeData[target].left;
-        let rightSubtree = treeData[target].right;
-
-        treeData[leftSubtree].parent = -1; // Sementara jadi root sendiri
-        
-        // 2. Cari Predecessor (Max di Kiri)
-        let maxLeft = findMax(leftSubtree);
-        
-        // 3. Splay Predecessor ke puncak Subtree Kiri
-        // Kita perlu set root sementara ke leftSubtree agar splay bekerja di subtree tsb (atau panggil splay logic manual)
-        // Namun, karena parent leftSubtree sudah -1, fungsi splay(maxLeft) akan menjadikannya root global baru jika dijalankan.
-        // Karena `parent` dari `leftSubtree` sudah diputus (-1), `splay(maxLeft)` akan berhenti saat `maxLeft` mencapai posisi teratas (yang parentnya -1).
-        
-        // Trik: set parent leftSubtree = -1 sudah dilakukan di atas.
-        splay(maxLeft); 
-        // Sekarang `root` berubah menjadi `maxLeft` karena efek samping fungsi splay
-        // Dan `maxLeft` ini tidak punya anak kanan (karena dia max).
-
-        // 4. Sambung subtree Kanan ke kanan Predecessor
-        treeData[maxLeft].right = rightSubtree;
-        if (rightSubtree !== -1) {
-            treeData[rightSubtree].parent = maxLeft;
+        let predIndex = findPredecessor(index);
+        if (predIndex == null) {
+            console.log("Predecessor not found!");
+            return;
         }
+
+        let predValue = splay_tree[predIndex];
+        splay_tree[index] = predValue;
+        deleteValue(predValue, predIndex);
         
-        root = maxLeft;
     }
 
-    // Tandai node lama sebagai tidak aktif (soft delete)
-    treeData[target].active = false;
-    return true;
+    console.log("after deletion:", splay_tree);
 }
 
-
-// --- VISUALISASI ---
-
-const svg = document.getElementById('tree-svg');
-const tableBody = document.querySelector('#memory-table tbody');
-const messageBox = document.getElementById('message-box');
-const inputField = document.getElementById('nodeValue');
-
-function setMessage(msg, color = '#333') {
-    messageBox.textContent = msg;
-    messageBox.style.color = color;
-}
-
-function drawTree() {
-    svg.innerHTML = '';
-    renderTable(); // Update tabel juga
-
-    if (root === -1) return;
-
-    const width = svg.clientWidth || 800;
-    // Gambar rekursif mulai dari root index
-    drawNodeRecursive(root, width / 2, 40, width / 4);
-}
-
-function drawNodeRecursive(idx, x, y, offset) {
-    if (idx === -1) return;
-    const node = treeData[idx];
-
-    // Gambar Edge ke Kiri
-    if (node.left !== -1) {
-        drawLine(x, y, x - offset, y + 60);
-        drawNodeRecursive(node.left, x - offset, y + 60, offset / 1.8);
-    }
-    // Gambar Edge ke Kanan
-    if (node.right !== -1) {
-        drawLine(x, y, x + offset, y + 60);
-        drawNodeRecursive(node.right, x + offset, y + 60, offset / 1.8);
-    }
-
-    // Gambar Node
-    drawCircle(x, y, node.value, idx);
-}
-
-function drawLine(x1, y1, x2, y2) {
-    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    line.setAttribute('x1', x1); line.setAttribute('y1', y1);
-    line.setAttribute('x2', x2); line.setAttribute('y2', y2);
-    svg.appendChild(line);
-}
-
-function drawCircle(x, y, value, idx) {
-    const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    
-    circle.setAttribute('cx', x);
-    circle.setAttribute('cy', y);
-    circle.setAttribute('r', 20);
-
-    // Styling khusus Root
-    if (idx === root) circle.classList.add('root');
-
-    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    text.setAttribute('x', x);
-    text.setAttribute('y', y + 5);
-    text.setAttribute('text-anchor', 'middle');
-    text.textContent = value; // + `[${idx}]` jika ingin debug index
-
-    // Hover effect untuk melihat detail index di console/tooltip (opsional)
-    group.appendChild(circle);
-    group.appendChild(text);
-    svg.appendChild(group);
-}
-
-// --- HANDLERS ---
-
-function getInputValue() {
-    const val = parseInt(inputField.value);
-    if (isNaN(val)) {
-        setMessage("Input angka valid!", "red");
+function findPredecessor(index) {
+    let left = index * 2 + 1;
+    if (left >= splay_tree.length || splay_tree[left] == null) {
         return null;
     }
-    return val;
+
+    current = left;
+    while (true) {
+        let right = current * 2 + 2;
+        if (right < splay_tree.length && splay_tree[right] != null) {
+            current = right;
+        } else {
+            break;
+        }
+    }
+    return current;
 }
 
-function handleInsert() {
-    const val = getInputValue();
-    if (val === null) return;
-    insert(val);
-    drawTree();
-    setMessage(`Insert ${val} sukses.`, "green");
-    inputField.value = '';
-    inputField.focus();
-}
-
-function handleSearch() {
-    const val = getInputValue();
-    if (val === null) return;
-    const found = search(val);
-    drawTree();
-    setMessage(found ? `Ketemu ${val} (Splayed).` : `${val} tidak ada (Nearest Splayed).`, found ? "blue" : "orange");
-    inputField.value = '';
-    inputField.focus();
-}
-
-function handleDelete() {
-    const val = getInputValue();
-    if (val === null) return;
-    const success = deleteNode(val);
-    drawTree();
-    setMessage(success ? `Delete ${val} sukses.` : `${val} tidak ditemukan.`, success ? "red" : "orange");
-    inputField.value = '';
-    inputField.focus();
-}
-
-function handleReset() {
-    treeData = [];
-    root = -1;
-    drawTree();
-    setMessage("Tree dan Memori direset.");
-}
-
-// Init
 drawTree();

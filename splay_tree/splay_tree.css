@@ -1,111 +1,16 @@
-body {
-    font-family: 'Consolas', 'Segoe UI', sans-serif;
-    background-color: #f0f2f5;
-    display: flex;
-    justify-content: center;
+*,
+*::after,
+*::before {
     margin: 0;
-    padding: 20px;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-.container {
-    width: 95%;
-    max-width: 1100px;
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    text-align: center;
+body {
+    overflow-x: hidden;
 }
 
-h1 {
-    color: #2c3e50;
-}
-
-.controls {
-    margin-bottom: 20px;
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-}
-
-input {
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    width: 120px;
-}
-
-button {
-    padding: 8px 16px;
-    border: none;
-    border-radius: 4px;
-    color: white;
-    cursor: pointer;
-    font-weight: bold;
-}
-
-.btn.insert {
-    background-color: #27ae60;
-}
-
-.btn.search {
-    background-color: #2980b9;
-}
-
-.btn.delete {
-    background-color: #c0392b;
-}
-
-.btn.reset {
-    background-color: #7f8c8d;
-}
-
-button:hover {
-    opacity: 0.9;
-}
-
-.message {
-    margin-bottom: 10px;
-    color: #555;
-    font-style: italic;
-    min-height: 1.2em;
-}
-
-/* Area SVG */
 .canvas-container {
-    border: 2px solid #ecf0f1;
-    border-radius: 8px;
-    background-color: #fff;
-    overflow: hidden;
-    margin-bottom: 20px;
-}
-
-circle {
-    fill: #3498db;
-    stroke: #2c3e50;
-    stroke-width: 2;
-    transition: all 0.5s ease;
-}
-
-circle.root {
-    fill: #8e44ad;
-}
-
-circle.highlight {
-    fill: #e67e22;
-    stroke: #d35400;
-}
-
-text {
-    font-family: monospace;
-    font-size: 14px;
-    fill: white;
-    font-weight: bold;
-    pointer-events: none;
-}
-
-line {
-    stroke: #95a5a6;
-    stroke-width: 2;
-    transition: all 0.5s ease;
+    overflow-y: hidden;
+    overflow-x: scroll;
 }
