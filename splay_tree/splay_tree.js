@@ -1,17 +1,27 @@
-splay_tree = [];
+let splay_tree = [];
 
-let canvas = document.getElementById('canvas');
+class Node {
+    constructor(val) {
+        this.val = val;
+        this.left = null;
+        this.right = null;
+        this.parent = null;
+    }
+}
+
+let root = null;
+
+const canvas = document.getElementById('canvas');
 
 canvas.width = window.innerWidth;
 canvas.height = 560;
 
-let drawingPanel = canvas.getContext('2d');
+const drawingPanel = canvas.getContext('2d');
 let width = canvas.width;
 let height = canvas.height;
-
-let insertBox = document.getElementById('insert');
-let searchBox = document.getElementById('search');
-let deleteBox = document.getElementById('delete');
+const insertBox = document.getElementById('insert');
+const searchBox = document.getElementById('search');
+const deleteBox = document.getElementById('delete');
 
 function drawTree(index = 0) {
     if (index >= splay_tree.length || splay_tree[index] == null) return;
@@ -153,7 +163,6 @@ function insertValue(value, index = 0) {
 
     if (splay_tree.length === 0) {
         splay_tree.push(num);
-        console.log(splay_tree);
         return;
     }
 
@@ -163,7 +172,7 @@ function insertValue(value, index = 0) {
 
     if (splay_tree[index] == null) {
         splay_tree[index] = value;
-        console.log(splay_tree);
+        splay(index);
         return;
     }
 
@@ -172,14 +181,9 @@ function insertValue(value, index = 0) {
     } else {
         insertValue(value, 2 * index + 2);
     }
-
 }
 
-function splay(index) {
-
-}
-
-function searchValue(value, index = 0) {
+function search(value, index = 0) {
     if (index >= splay_tree.length || splay_tree[index] == null) {
         let parentIndex = Math.floor((index - 1) / 2);
         console.log("value not found, nearest at:", parentIndex);
@@ -189,6 +193,27 @@ function searchValue(value, index = 0) {
     if (splay_tree[index] == value) {
         console.log("value found at:", index);
         return index;
+    }
+
+    if (value < splay_tree[index]) {
+        return search(value, 2 * index + 1);
+    }
+
+    return search(value, 2 * index + 2);
+}
+
+function searchValue(value, index = 0) {
+    if (index >= splay_tree.length || splay_tree[index] == null) {
+        let parentIndex = Math.floor((index - 1) / 2);
+        console.log("value not found, nearest at:", parentIndex);
+        splay(parentIndex);
+        return;
+    }
+
+    if (splay_tree[index] == value) {
+        console.log("value found at:", index);
+        splay(index);
+        return;
     }
 
     if (value < splay_tree[index]) {
@@ -253,8 +278,6 @@ function deleteValue(value, index = 0) {
         deleteValue(predValue, predIndex);
         
     }
-
-    console.log("after deletion:", splay_tree);
 }
 
 function findPredecessor(index) {
@@ -273,6 +296,25 @@ function findPredecessor(index) {
         }
     }
     return current;
+}
+
+function zag(index) {
+    if (index == 0) {
+        return;
+    }
+
+    
+}
+
+function splay(index) {
+
+    if (splay_tree[0] == null) return;
+
+    if (index == 0) return; 
+
+    let parent = Math.floor((index - 1) / 2);
+    
+    
 }
 
 drawTree();
