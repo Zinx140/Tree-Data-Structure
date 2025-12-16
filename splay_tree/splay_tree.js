@@ -1,320 +1,335 @@
-let splay_tree = [];
-
+// --- KONFIGURASI VISUAL ---
+const NODE_RADIUS = 25;
+const VERTICAL_SPACING = 70;
+const ANIMATION_SPEED = 0.15;
+// --- STRUKTUR DATA ---
 class Node {
-    constructor(val) {
-        this.val = val;
+    constructor(value) {
+        this.value = value;
         this.left = null;
         this.right = null;
         this.parent = null;
+        // Visual Properties
+        this.x = 0;
+        this.y = 0;
+        this.targetX = 0;
+        this.targetY = 0;
+        // Helper Layout
+        this.visIndex = 0;
     }
 }
-
-let root = null;
-
-const canvas = document.getElementById('canvas');
-
-canvas.width = window.innerWidth;
-canvas.height = 560;
-
-const drawingPanel = canvas.getContext('2d');
-let width = canvas.width;
-let height = canvas.height;
-const insertBox = document.getElementById('insert');
-const searchBox = document.getElementById('search');
-const deleteBox = document.getElementById('delete');
-
-function drawTree(index = 0) {
-    if (index >= splay_tree.length || splay_tree[index] == null) return;
-
-    const canvasWidth = width;
-    const levelHeight = 100;    
-    const topMargin = 80;
-    const RADIUS = 20;
-
-    const depth = Math.floor(Math.log2(index + 1));
-    const levelStartIndex = Math.pow(2, depth) - 1;
-    const positionIndex = index - levelStartIndex;
-    const nodesAtLevel = Math.pow(2, depth);
-    const gapX = canvasWidth / (nodesAtLevel + 1);
-
-    const posX = gapX * (positionIndex + 1);
-    const posY = topMargin + depth * levelHeight;
-
-    const parentIndex = Math.floor((index - 1) / 2);
-    if (index > 0 && parentIndex >= 0) {
-
-        const parentDepth = Math.floor(Math.log2(parentIndex + 1));
-        const parentStartIndex = Math.pow(2, parentDepth) - 1;
-        const parentPosIndex = parentIndex - parentStartIndex;
-        const parentNodesAtLevel = Math.pow(2, parentDepth);
-        const parentGapX = canvasWidth / (parentNodesAtLevel + 1);
-
-        const parentX = parentGapX * (parentPosIndex + 1);
-        const parentY = topMargin + parentDepth * levelHeight;
-
-        const dx = posX - parentX;
-        const dy = posY - parentY;
-        const angle = Math.atan2(dy, dx);
-
-        const startX = parentX + Math.cos(angle) * RADIUS;
-        const startY = parentY + Math.sin(angle) * RADIUS;
-
-        const endX = posX - Math.cos(angle) * RADIUS;
-        const endY = posY - Math.sin(angle) * RADIUS;
-
-        drawingPanel.beginPath();
-        drawingPanel.moveTo(startX, startY);
-        drawingPanel.lineTo(endX, endY);
-        drawingPanel.stroke();
+class SplayTree {
+    constructor() {
+        this.root = null;
     }
-
-    if (splay_tree[index] == null) return;
-
-    drawingPanel.beginPath();
-    drawingPanel.fillStyle = "#FF0000";
-    drawingPanel.strokeStyle = "#000000";
-    drawingPanel.arc(posX, posY, RADIUS, 0, Math.PI * 2);
-    drawingPanel.fill();
-    drawingPanel.stroke();
-
-    drawingPanel.fillStyle = "white";
-    drawingPanel.font = "20px Arial";
-    drawingPanel.textAlign = "center";
-    drawingPanel.textBaseline = "middle";
-    drawingPanel.fillText(splay_tree[index], posX, posY);
-
-    drawTree(2 * index + 1);
-    drawTree(2 * index + 2);
-}
-
-function computeRequiredCanvasHeight() {
-    if (splay_tree.length === 0) return 300;
-
-    const lastIndex = splay_tree.length - 1;
-    const depth = Math.floor(Math.log2(lastIndex + 1));
-    
-    const topMargin = 80;
-    const levelHeight = 100;
-    
-    return topMargin + depth * levelHeight + 200;
-}
-
-function computeRequiredCanvasWidth() {
-    if (splay_tree.length === 0) return 500;
-    
-    let lastIndex = splay_tree.length - 1;
-    
-    let depth = Math.floor(Math.log2(lastIndex + 1));
-    
-    let nodesAtLastLevel = Math.pow(2, depth);
-    
-    let gapX = 80;
-    
-    let requiredWidth = (nodesAtLastLevel + 1) * gapX;
-    
-    return Math.max(requiredWidth, window.innerWidth);
-}
-
-function prepareCanvas() {
-    const newHeight = computeRequiredCanvasHeight();
-    
-    if (newHeight < 560) return;
-    
-    canvas.height = newHeight;    
-    canvas.width = computeRequiredCanvasWidth();
-    
-    width = canvas.width;  
-    height = canvas.height;
-}
-
-function btnAction(action) {
-    switch(action) {
-        case "insert":
-            if (insertBox.value != "") {
-                insertValue(parseInt(insertBox.value));
-                insertBox.value = "";
-            }
-        break;
-        case "search":
-                if (searchBox.value != "") {
-                    searchValue(parseInt(searchBox.value));
-                    searchBox.value = "";
+    // --- ROTASI ---
+    rightRotate(x) {
+        let y = x.left;
+        x.left = y.right;
+        if (y.right) y.right.parent = x;
+        y.parent = x.parent;
+        if (!x.parent) this.root = y;
+        else if (x === x.parent.right) x.parent.right = y;
+        else x.parent.left = y;
+        y.right = x;
+        x.parent = y;
+    }
+    leftRotate(x) {
+        let y = x.right;
+        x.right = y.left;
+        if (y.left) y.left.parent = x;
+        y.parent = x.parent;
+        if (!x.parent) this.root = y;
+        else if (x === x.parent.left) x.parent.left = y;
+        else x.parent.right = y;
+        y.left = x;
+        x.parent = y;
+    }
+    // --- SPLAY ---
+    splay(n) {
+        while (n.parent) {
+            if (!n.parent.parent) {
+                // Zig / Zag
+                if (n.parent.left === n) this.rightRotate(n.parent);
+                else this.leftRotate(n.parent);
+            } else {
+                let p = n.parent;
+                let g = p.parent;
+                if (n.parent.left === n && p.parent.left === p) { // Zig-Zig
+                    this.rightRotate(g);
+                    this.rightRotate(p);
+                } else if (n.parent.right === n && p.parent.right === p) { // Zag-Zag
+                    this.leftRotate(g);
+                    this.leftRotate(p);
+                } else if (n.parent.right === n && p.parent.left === p) { // Zig-Zag
+                    this.leftRotate(p);
+                    this.rightRotate(g);
+                } else { // Zag-Zig
+                    this.rightRotate(p);
+                    this.leftRotate(g);
                 }
-            break;
-        case "delete":
-            if (deleteBox.value != "") {
-                deleteValue(parseInt(deleteBox.value));
-                deleteBox.value = "";
             }
-        break;
-    }
-    
-    clearCanvas();
-    prepareCanvas();
-    drawTree();
-}
-
-function clearCanvas() {
-    drawingPanel.clearRect(0, 0, canvas.width, canvas.height);
-}
-
-function insertValue(value, index = 0) {
-    let num = parseInt(value);
-
-    if (splay_tree.length === 0) {
-        splay_tree.push(num);
-        return;
-    }
-
-    while (index > splay_tree.length) {
-        splay_tree.push(null);
-    }
-
-    if (splay_tree[index] == null) {
-        splay_tree[index] = value;
-        splay(index);
-        return;
-    }
-
-    if (splay_tree[index] > num) {
-        insertValue(value, 2 * index + 1);
-    } else {
-        insertValue(value, 2 * index + 2);
-    }
-}
-
-function search(value, index = 0) {
-    if (index >= splay_tree.length || splay_tree[index] == null) {
-        let parentIndex = Math.floor((index - 1) / 2);
-        console.log("value not found, nearest at:", parentIndex);
-        return parentIndex;
-    }
-
-    if (splay_tree[index] == value) {
-        console.log("value found at:", index);
-        return index;
-    }
-
-    if (value < splay_tree[index]) {
-        return search(value, 2 * index + 1);
-    }
-
-    return search(value, 2 * index + 2);
-}
-
-function searchValue(value, index = 0) {
-    if (index >= splay_tree.length || splay_tree[index] == null) {
-        let parentIndex = Math.floor((index - 1) / 2);
-        console.log("value not found, nearest at:", parentIndex);
-        splay(parentIndex);
-        return;
-    }
-
-    if (splay_tree[index] == value) {
-        console.log("value found at:", index);
-        splay(index);
-        return;
-    }
-
-    if (value < splay_tree[index]) {
-        return searchValue(value, 2 * index + 1);
-    }
-
-    return searchValue(value, 2 * index + 2);
-}
-
-function deleteValue(value, index = 0) {
-    if (index >= splay_tree.length || splay_tree[index] == null) {
-        console.log("Number not found");
-        return;
-    }
-
-    current = splay_tree[index];
-
-    if (value < current) {
-        deleteValue(value, index * 2 + 1);
-        return;
-    }
-
-    if (value > current) {
-        deleteValue(value, index * 2 + 2);
-        return;
-    }
-
-    if (current == value) {
-    
-        let left = index * 2 + 1;
-        let right = index * 2 + 2;
-
-        let hasLeft = left < splay_tree.length && splay_tree[left] != null;
-        let hasRight = right < splay_tree.length && splay_tree[right] != null;
-
-        // JIKA LEAF
-        if (!hasLeft && !hasRight) {
-            splay_tree[index] = null;
-            return;
         }
-
-        if (hasLeft && !hasRight) {
-            splay_tree[index] = splay_tree[left];
-            deleteValue(splay_tree[left], left);
-            return;
-        }
-
-        if (!hasLeft && hasRight) {
-            splay_tree[index] = splay_tree[right];
-            deleteValue(splay_tree[right], right);
-            return;
-        }
-
-        let predIndex = findPredecessor(index);
-        if (predIndex == null) {
-            console.log("Predecessor not found!");
-            return;
-        }
-
-        let predValue = splay_tree[predIndex];
-        splay_tree[index] = predValue;
-        deleteValue(predValue, predIndex);
-        
     }
-}
-
-function findPredecessor(index) {
-    let left = index * 2 + 1;
-    if (left >= splay_tree.length || splay_tree[left] == null) {
-        return null;
+    // --- HELPER UNTUK DELETE ---
+    replaceNode(u, v) {
+        if (!u.parent) this.root = v;
+        else if (u === u.parent.left) u.parent.left = v;
+        else u.parent.right = v;
+        if (v) v.parent = u.parent;
     }
-
-    current = left;
-    while (true) {
-        let right = current * 2 + 2;
-        if (right < splay_tree.length && splay_tree[right] != null) {
-            current = right;
+    // --- INSERT ---
+    insert(value) {
+        let z = this.root;
+        let p = null;
+        while (z) {
+            p = z;
+            if (value < z.value) z = z.left;
+            else if (value > z.value) z = z.right;
+            else {
+                setMessage(`Nilai ${value} sudah ada. Splaying ke root.`);
+                this.splay(z);
+                return;
+            }
+        }
+        let newNode = new Node(value);
+        newNode.parent = p;
+        // Animasi muncul dari parent
+        if (p) {
+            newNode.x = p.x;
+            newNode.y = p.y;
         } else {
-            break;
+            newNode.x = container.clientWidth / 2;
+            newNode.y = 50;
+        }
+        if (!p) this.root = newNode;
+        else if (value < p.value) p.left = newNode;
+        else p.right = newNode;
+        setMessage(`Insert ${value} (BST), lalu Splay ke Root.`);
+        this.splay(newNode);
+    }
+    // --- SEARCH ---
+    search(value) {
+        let z = this.root;
+        let lastVisited = null;
+        while (z) {
+            if (value === z.value) {
+                setMessage(`Ditemukan ${value}. Splaying ke Root.`);
+                this.splay(z);
+                return true;
+            }
+            lastVisited = z;
+            if (value < z.value) z = z.left;
+            else z = z.right;
+        }
+        if (lastVisited) {
+            setMessage(`${value} tidak ditemukan. Splaying parent terakhir (${lastVisited.value}).`);
+            this.splay(lastVisited);
+        } else {
+            setMessage("Tree kosong.");
+        }
+        return false;
+    }
+    // --- DELETE (FINAL FIX) ---
+    delete(value) {
+        let z = this.root;
+        let lastVisited = null;
+        // 1. Cari Node
+        while (z) {
+            if (z.value === value) break;
+            lastVisited = z;
+            if (value < z.value) z = z.left;
+            else z = z.right;
+        }
+        // Jika tidak ketemu
+        if (!z) {
+            setMessage(`Delete ${value} gagal (tidak ada). Splay node terakhir dikunjungi.`);
+            if (lastVisited) this.splay(lastVisited);
+            return;
+        }
+        setMessage(`Menghapus ${value}...`);
+        let nodeToSplay = null; // Parent yang akan di-splay
+        // 2. Logika Penghapusan
+        if (z.left && z.right) {
+            // --- Kasus 2 Anak ---
+            let predecessor = z.left;
+            while (predecessor.right) {
+                predecessor = predecessor.right;
+            }
+            // Ambil parent dari predecessor SEBELUM struktur berubah
+            let parentOfPredecessor = predecessor.parent;
+            // Tukar Nilai
+            z.value = predecessor.value;
+            // Hapus Node Predecessor Fisik
+            this.replaceNode(predecessor, predecessor.left);
+            // Tentukan siapa yang di splay
+            if (parentOfPredecessor === z) {
+                nodeToSplay = z;
+            } else {
+                nodeToSplay = parentOfPredecessor;
+            }
+            setMessage(`Swap dengan Predecessor. Hapus fisik. Splay parent (${nodeToSplay.value}).`);
+        } else {
+            // --- Kasus 0 atau 1 Anak ---
+            nodeToSplay = z.parent;
+            if (!z.left) this.replaceNode(z, z.right);
+            else this.replaceNode(z, z.left);
+            if (nodeToSplay) setMessage(`Node dihapus. Splay parent (${nodeToSplay.value}).`);
+            else setMessage(`Root dihapus.`);
+        }
+        // 3. Lakukan Splay & UPDATE VISUAL
+        if (nodeToSplay) {
+            setTimeout(() => {
+                this.splay(nodeToSplay);
+                updateTreeVisuals(); // <--- PERBAIKAN DI SINI: Panggil update visual agar canvas berubah
+            }, 600); // Delay sedikit untuk efek visual
         }
     }
-    return current;
 }
-
-function zag(index) {
-    if (index == 0) {
-        return;
+// --- VISUALISASI ---
+const tree = new SplayTree();
+const canvas = document.getElementById('treeCanvas');
+const ctx = canvas.getContext('2d');
+const container = document.getElementById('canvasContainer');
+// Layout Logic (Inorder X)
+let globalIndex = 0;
+function calculatePositions() {
+    if (!tree.root) return;
+    globalIndex = 0;
+    assignInorderIndex(tree.root);
+    const X_SPACING = 55;
+    assignCoordinates(tree.root, X_SPACING, 60);
+    resizeCanvas();
+}
+function assignInorderIndex(node) {
+    if (!node) return;
+    assignInorderIndex(node.left);
+    node.visIndex = globalIndex++;
+    assignInorderIndex(node.right);
+}
+function assignCoordinates(node, spacing, y) {
+    if (!node) return;
+    node.targetX = (node.visIndex * spacing) + spacing;
+    node.targetY = y;
+    assignCoordinates(node.left, spacing, y + VERTICAL_SPACING);
+    assignCoordinates(node.right, spacing, y + VERTICAL_SPACING);
+}
+function resizeCanvas() {
+    if (!tree.root) return;
+    let maxX = 0, maxY = 0;
+    function findBounds(node) {
+        if (!node) return;
+        if (node.targetX > maxX) maxX = node.targetX;
+        if (node.targetY > maxY) maxY = node.targetY;
+        findBounds(node.left);
+        findBounds(node.right);
     }
-
-    
+    findBounds(tree.root);
+    const newWidth = Math.max(container.clientWidth, maxX + 100);
+    const newHeight = Math.max(container.clientHeight, maxY + 100);
+    if (canvas.width !== newWidth || canvas.height !== newHeight) {
+        canvas.width = newWidth;
+        canvas.height = newHeight;
+    }
+    if (maxX < container.clientWidth) {
+        let offset = (container.clientWidth - (maxX + 50)) / 2;
+        if (offset > 0) shiftTreeX(tree.root, offset);
+    }
 }
-
-function splay(index) {
-
-    if (splay_tree[0] == null) return;
-
-    if (index == 0) return; 
-
-    let parent = Math.floor((index - 1) / 2);
-    
-    
+function shiftTreeX(node, offset) {
+    if (!node) return;
+    node.targetX += offset;
+    shiftTreeX(node.left, offset);
+    shiftTreeX(node.right, offset);
 }
-
-drawTree();
+// --- ANIMATION LOOP ---
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (tree.root) {
+        updateAnimation(tree.root);
+        drawConnections(tree.root);
+        drawNodes(tree.root);
+    }
+    requestAnimationFrame(draw);
+}
+function updateAnimation(node) {
+    if (!node) return;
+    node.x += (node.targetX - node.x) * ANIMATION_SPEED;
+    node.y += (node.targetY - node.y) * ANIMATION_SPEED;
+    if (Math.abs(node.x - node.targetX) < 0.5) node.x = node.targetX;
+    if (Math.abs(node.y - node.targetY) < 0.5) node.y = node.targetY;
+    updateAnimation(node.left);
+    updateAnimation(node.right);
+}
+function drawConnections(node) {
+    if (!node) return;
+    ctx.strokeStyle = '#888';
+    ctx.lineWidth = 2;
+    if (node.left) {
+        ctx.beginPath(); ctx.moveTo(node.x, node.y); ctx.lineTo(node.left.x, node.left.y); ctx.stroke();
+        drawConnections(node.left);
+    }
+    if (node.right) {
+        ctx.beginPath(); ctx.moveTo(node.x, node.y); ctx.lineTo(node.right.x, node.right.y); ctx.stroke();
+        drawConnections(node.right);
+    }
+}
+function drawNodes(node) {
+    if (!node) return;
+    ctx.beginPath();
+    ctx.arc(node.x, node.y, NODE_RADIUS, 0, Math.PI * 2);
+    if (node === tree.root) ctx.fillStyle = '#ffd700';
+    else ctx.fillStyle = '#ffffff';
+    ctx.fill();
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.fillStyle = '#000';
+    ctx.font = 'bold 14px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(node.value, node.x, node.y);
+    drawNodes(node.left);
+    drawNodes(node.right);
+}
+// --- CONTROLS ---
+// Di sini kita update secara global
+function updateTreeVisuals() {
+    calculatePositions();
+}
+function insertNode() {
+    const val = parseInt(document.getElementById('inputValue').value);
+    if (isNaN(val)) return;
+    tree.insert(val);
+    document.getElementById('inputValue').value = '';
+    updateTreeVisuals();
+}
+function searchNode() {
+    const val = parseInt(document.getElementById('inputValue').value);
+    if (isNaN(val)) return;
+    tree.search(val);
+    updateTreeVisuals();
+}
+function deleteNode() {
+    const val = parseInt(document.getElementById('inputValue').value);
+    if (isNaN(val)) return;
+    tree.delete(val);
+    updateTreeVisuals();
+}
+function resetTree() {
+    tree.root = null;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    setMessage("Tree di-reset.");
+}
+function setMessage(msg) {
+    document.getElementById('message').innerText = msg;
+}
+// Init
+canvas.width = container.clientWidth;
+canvas.height = container.clientHeight;
+draw();
+window.addEventListener('resize', () => {
+    canvas.width = container.clientWidth;
+    canvas.height = container.clientHeight;
+    updateTreeVisuals();
+});
