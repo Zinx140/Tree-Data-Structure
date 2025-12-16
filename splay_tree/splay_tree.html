@@ -38,15 +38,14 @@
     <!-- MAIN -->
     <main>
         <div class="controls">
-            <input type="number" id="inputValue" placeholder="Masukkan Angka"
-                onkeydown="if(event.key==='Enter') insertNode()">
+            <input type="number" id="inputValue" placeholder="Masukkan Angka">
             <button id="btn-insert" onclick="insertNode()">Insert</button>
             <button id="btn-search" onclick="searchNode()">Search</button>
             <button id="btn-delete" onclick="deleteNode()">Delete</button>
             <button id="btn-reset" onclick="resetTree()">Reset</button>
         </div>
 
-        <div id="message">Siap.</div>
+        <div id="message" class="mb-5">Siap.</div>
 
         <div class="canvas-container" id="canvasContainer">
             <canvas id="treeCanvas"></canvas>

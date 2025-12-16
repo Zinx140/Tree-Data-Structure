@@ -1,8 +1,7 @@
-// --- KONFIGURASI VISUAL ---
 const NODE_RADIUS = 25;
 const VERTICAL_SPACING = 70;
 const ANIMATION_SPEED = 0.15;
-// --- STRUKTUR DATA ---
+
 class Node {
     constructor(value) {
         this.value = value;
@@ -22,37 +21,65 @@ class SplayTree {
     constructor() {
         this.root = null;
     }
-    // --- ROTASI ---
+
+    // ROTASI 
     rightRotate(x) {
         let y = x.left;
         x.left = y.right;
-        if (y.right) y.right.parent = x;
+        if (y.right) {
+            y.right.parent = x;
+        } 
+
         y.parent = x.parent;
-        if (!x.parent) this.root = y;
-        else if (x === x.parent.right) x.parent.right = y;
-        else x.parent.left = y;
+
+        if (!x.parent) {
+            this.root = y;
+        } else if (x === x.parent.right) {
+            x.parent.right = y;
+        } else {
+            x.parent.left = y;
+        } 
+
         y.right = x;
         x.parent = y;
     }
+
     leftRotate(x) {
         let y = x.right;
         x.right = y.left;
-        if (y.left) y.left.parent = x;
+
+        if (y.left) {
+            y.left.parent = x;
+        } 
+
         y.parent = x.parent;
-        if (!x.parent) this.root = y;
-        else if (x === x.parent.left) x.parent.left = y;
-        else x.parent.right = y;
+
+        if (!x.parent) {
+            this.root = y;
+        } else if (x === x.parent.left) {
+            x.parent.left = y;
+        } else {
+            x.parent.right = y;
+        }
+
         y.left = x;
         x.parent = y;
     }
-    // --- SPLAY ---
+    
+    // SPLAY 
     splay(n) {
         while (n.parent) {
             if (!n.parent.parent) {
+
                 // Zig / Zag
-                if (n.parent.left === n) this.rightRotate(n.parent);
-                else this.leftRotate(n.parent);
+                if (n.parent.left === n) {
+                    this.rightRotate(n.parent);
+                } else {
+                    this.leftRotate(n.parent);
+                } 
+
             } else {
+
                 let p = n.parent;
                 let g = p.parent;
                 if (n.parent.left === n && p.parent.left === p) { // Zig-Zig
@@ -68,33 +95,45 @@ class SplayTree {
                     this.rightRotate(p);
                     this.leftRotate(g);
                 }
+
             }
         }
     }
-    // --- HELPER UNTUK DELETE ---
+
+    // HELPER UNTUK DELETE 
     replaceNode(u, v) {
-        if (!u.parent) this.root = v;
-        else if (u === u.parent.left) u.parent.left = v;
-        else u.parent.right = v;
-        if (v) v.parent = u.parent;
+        if (!u.parent) {
+            this.root = v;
+        } else if (u === u.parent.left) {
+            u.parent.left = v;
+        } else {
+            u.parent.right = v;
+        } 
+
+        if (v) {
+            v.parent = u.parent;
+        } 
     }
-    // --- INSERT ---
+
+    // INSERT 
     insert(value) {
         let z = this.root;
         let p = null;
         while (z) {
             p = z;
-            if (value < z.value) z = z.left;
-            else if (value > z.value) z = z.right;
-            else {
+            if (value < z.value) {
+                z = z.left;
+            } else if (value > z.value) {
+                z = z.right;
+            } else {
                 setMessage(`Nilai ${value} sudah ada. Splaying ke root.`);
                 this.splay(z);
                 return;
             }
         }
+
         let newNode = new Node(value);
         newNode.parent = p;
-        // Animasi muncul dari parent
         if (p) {
             newNode.x = p.x;
             newNode.y = p.y;
@@ -102,13 +141,19 @@ class SplayTree {
             newNode.x = container.clientWidth / 2;
             newNode.y = 50;
         }
-        if (!p) this.root = newNode;
-        else if (value < p.value) p.left = newNode;
-        else p.right = newNode;
+
+        if (!p) {
+            this.root = newNode;
+        } else if (value < p.value) {
+            p.left = newNode;
+        } else { 
+            p.right = newNode;
+        }
         setMessage(`Insert ${value} (BST), lalu Splay ke Root.`);
         this.splay(newNode);
     }
-    // --- SEARCH ---
+
+    // SEARCH 
     search(value) {
         let z = this.root;
         let lastVisited = null;
@@ -118,10 +163,15 @@ class SplayTree {
                 this.splay(z);
                 return true;
             }
+
             lastVisited = z;
-            if (value < z.value) z = z.left;
-            else z = z.right;
+            if (value < z.value) {
+                z = z.left;
+            } else {
+                z = z.right;
+            } 
         }
+
         if (lastVisited) {
             setMessage(`${value} tidak ditemukan. Splaying parent terakhir (${lastVisited.value}).`);
             this.splay(lastVisited);
@@ -130,59 +180,71 @@ class SplayTree {
         }
         return false;
     }
-    // --- DELETE (FINAL FIX) ---
+
+    //  DELETE  
     delete(value) {
         let z = this.root;
         let lastVisited = null;
         // 1. Cari Node
         while (z) {
             if (z.value === value) break;
+
             lastVisited = z;
-            if (value < z.value) z = z.left;
-            else z = z.right;
+            if (value < z.value) {
+                z = z.left;
+            } else {
+                z = z.right;
+            }
         }
         // Jika tidak ketemu
         if (!z) {
             setMessage(`Delete ${value} gagal (tidak ada). Splay node terakhir dikunjungi.`);
-            if (lastVisited) this.splay(lastVisited);
+            if (lastVisited) {
+                this.splay(lastVisited);
+            } 
             return;
         }
         setMessage(`Menghapus ${value}...`);
-        let nodeToSplay = null; // Parent yang akan di-splay
-        // 2. Logika Penghapusan
+        let nodeToSplay = null; 
         if (z.left && z.right) {
-            // --- Kasus 2 Anak ---
             let predecessor = z.left;
             while (predecessor.right) {
                 predecessor = predecessor.right;
             }
-            // Ambil parent dari predecessor SEBELUM struktur berubah
+            
             let parentOfPredecessor = predecessor.parent;
-            // Tukar Nilai
             z.value = predecessor.value;
-            // Hapus Node Predecessor Fisik
             this.replaceNode(predecessor, predecessor.left);
-            // Tentukan siapa yang di splay
+
             if (parentOfPredecessor === z) {
                 nodeToSplay = z;
             } else {
                 nodeToSplay = parentOfPredecessor;
             }
+
             setMessage(`Swap dengan Predecessor. Hapus fisik. Splay parent (${nodeToSplay.value}).`);
         } else {
-            // --- Kasus 0 atau 1 Anak ---
+            
             nodeToSplay = z.parent;
-            if (!z.left) this.replaceNode(z, z.right);
-            else this.replaceNode(z, z.left);
-            if (nodeToSplay) setMessage(`Node dihapus. Splay parent (${nodeToSplay.value}).`);
-            else setMessage(`Root dihapus.`);
+            if (!z.left) {
+                this.replaceNode(z, z.right);
+            } else {
+                this.replaceNode(z, z.left);
+            } 
+
+            if (nodeToSplay) {
+                setMessage(`Node dihapus. Splay parent (${nodeToSplay.value}).`);
+            } else {
+                setMessage(`Root dihapus.`);
+            } 
+            
         }
-        // 3. Lakukan Splay & UPDATE VISUAL
+
         if (nodeToSplay) {
             setTimeout(() => {
                 this.splay(nodeToSplay);
-                updateTreeVisuals(); // <--- PERBAIKAN DI SINI: Panggil update visual agar canvas berubah
-            }, 600); // Delay sedikit untuk efek visual
+                updateTreeVisuals(); 
+            }, 600); 
         }
     }
 }
@@ -192,10 +254,11 @@ const tree = new SplayTree();
 const canvas = document.getElementById('treeCanvas');
 const ctx = canvas.getContext('2d');
 const container = document.getElementById('canvasContainer');
-// Layout Logic (Inorder X)
+
 let globalIndex = 0;
 function calculatePositions() {
     if (!tree.root) return;
+
     globalIndex = 0;
     assignInorderIndex(tree.root);
     const X_SPACING = 55;
@@ -205,6 +268,7 @@ function calculatePositions() {
 
 function assignInorderIndex(node) {
     if (!node) return;
+
     assignInorderIndex(node.left);
     node.visIndex = globalIndex++;
     assignInorderIndex(node.right);
@@ -212,29 +276,46 @@ function assignInorderIndex(node) {
 
 function assignCoordinates(node, spacing, y) {
     if (!node) return;
+
     node.targetX = (node.visIndex * spacing) + spacing;
     node.targetY = y;
     assignCoordinates(node.left, spacing, y + VERTICAL_SPACING);
     assignCoordinates(node.right, spacing, y + VERTICAL_SPACING);
 }
 
+function findBounds(node, bounds) {
+    if (!node) return;
+
+    if (node.targetX > bounds.maxX) {
+        bounds.maxX = node.targetX;
+    }
+
+    if (node.targetY > bounds.maxY) {
+        bounds.maxY = node.targetY;
+    }
+
+    findBounds(node.left, bounds);
+    findBounds(node.right, bounds);
+}
+
 function resizeCanvas() {
     if (!tree.root) return;
-    let maxX = 0, maxY = 0;
-    function findBounds(node) {
-        if (!node) return;
-        if (node.targetX > maxX) maxX = node.targetX;
-        if (node.targetY > maxY) maxY = node.targetY;
-        findBounds(node.left);
-        findBounds(node.right);
-    }
-    findBounds(tree.root);
+    
+    let currentBounds = { maxX: 0, maxY: 0 };
+
+    findBounds(tree.root, currentBounds);
+
+    const maxX = currentBounds.maxX;
+    const maxY = currentBounds.maxY;
+
     const newWidth = Math.max(container.clientWidth, maxX + 100);
     const newHeight = Math.max(container.clientHeight, maxY + 100);
+
     if (canvas.width !== newWidth || canvas.height !== newHeight) {
         canvas.width = newWidth;
         canvas.height = newHeight;
     }
+
     if (maxX < container.clientWidth) {
         let offset = (container.clientWidth - (maxX + 50)) / 2;
         if (offset > 0) shiftTreeX(tree.root, offset);
@@ -243,12 +324,12 @@ function resizeCanvas() {
 
 function shiftTreeX(node, offset) {
     if (!node) return;
+
     node.targetX += offset;
     shiftTreeX(node.left, offset);
     shiftTreeX(node.right, offset);
 }
 
-// --- ANIMATION LOOP ---
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     if (tree.root) {
@@ -261,10 +342,17 @@ function draw() {
 
 function updateAnimation(node) {
     if (!node) return;
+
     node.x += (node.targetX - node.x) * ANIMATION_SPEED;
     node.y += (node.targetY - node.y) * ANIMATION_SPEED;
-    if (Math.abs(node.x - node.targetX) < 0.5) node.x = node.targetX;
-    if (Math.abs(node.y - node.targetY) < 0.5) node.y = node.targetY;
+    if (Math.abs(node.x - node.targetX) < 0.5) {
+        node.x = node.targetX;
+    } 
+
+    if (Math.abs(node.y - node.targetY) < 0.5) {
+        node.y = node.targetY;
+    } 
+
     updateAnimation(node.left);
     updateAnimation(node.right);
 }
@@ -287,8 +375,14 @@ function drawNodes(node) {
     if (!node) return;
     ctx.beginPath();
     ctx.arc(node.x, node.y, NODE_RADIUS, 0, Math.PI * 2);
-    if (node === tree.root) ctx.fillStyle = '#ffd700';
-    else ctx.fillStyle = '#ffffff';
+
+    if (node === tree.root) {
+        ctx.fillStyle = '#ffd700';
+    } 
+    else {
+        ctx.fillStyle = '#ffffff';
+    }
+
     ctx.fill();
     ctx.strokeStyle = '#333';
     ctx.lineWidth = 2;
@@ -302,15 +396,15 @@ function drawNodes(node) {
     drawNodes(node.right);
 }
 
-// --- CONTROLS ---
-// Di sini kita update secara global
 function updateTreeVisuals() {
     calculatePositions();
 }
 
 function insertNode() {
     const val = parseInt(document.getElementById('inputValue').value);
+
     if (isNaN(val)) return;
+
     tree.insert(val);
     document.getElementById('inputValue').value = '';
     updateTreeVisuals();
@@ -318,14 +412,18 @@ function insertNode() {
 
 function searchNode() {
     const val = parseInt(document.getElementById('inputValue').value);
+    
     if (isNaN(val)) return;
+    
     tree.search(val);
     updateTreeVisuals();
 }
 
 function deleteNode() {
     const val = parseInt(document.getElementById('inputValue').value);
+
     if (isNaN(val)) return;
+    
     tree.delete(val);
     updateTreeVisuals();
 }
