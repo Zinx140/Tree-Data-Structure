@@ -186,6 +186,7 @@ class SplayTree {
         }
     }
 }
+
 // --- VISUALISASI ---
 const tree = new SplayTree();
 const canvas = document.getElementById('treeCanvas');
@@ -201,12 +202,14 @@ function calculatePositions() {
     assignCoordinates(tree.root, X_SPACING, 60);
     resizeCanvas();
 }
+
 function assignInorderIndex(node) {
     if (!node) return;
     assignInorderIndex(node.left);
     node.visIndex = globalIndex++;
     assignInorderIndex(node.right);
 }
+
 function assignCoordinates(node, spacing, y) {
     if (!node) return;
     node.targetX = (node.visIndex * spacing) + spacing;
@@ -214,6 +217,7 @@ function assignCoordinates(node, spacing, y) {
     assignCoordinates(node.left, spacing, y + VERTICAL_SPACING);
     assignCoordinates(node.right, spacing, y + VERTICAL_SPACING);
 }
+
 function resizeCanvas() {
     if (!tree.root) return;
     let maxX = 0, maxY = 0;
@@ -236,12 +240,14 @@ function resizeCanvas() {
         if (offset > 0) shiftTreeX(tree.root, offset);
     }
 }
+
 function shiftTreeX(node, offset) {
     if (!node) return;
     node.targetX += offset;
     shiftTreeX(node.left, offset);
     shiftTreeX(node.right, offset);
 }
+
 // --- ANIMATION LOOP ---
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -252,6 +258,7 @@ function draw() {
     }
     requestAnimationFrame(draw);
 }
+
 function updateAnimation(node) {
     if (!node) return;
     node.x += (node.targetX - node.x) * ANIMATION_SPEED;
@@ -261,6 +268,7 @@ function updateAnimation(node) {
     updateAnimation(node.left);
     updateAnimation(node.right);
 }
+
 function drawConnections(node) {
     if (!node) return;
     ctx.strokeStyle = '#888';
@@ -274,6 +282,7 @@ function drawConnections(node) {
         drawConnections(node.right);
     }
 }
+
 function drawNodes(node) {
     if (!node) return;
     ctx.beginPath();
@@ -292,11 +301,13 @@ function drawNodes(node) {
     drawNodes(node.left);
     drawNodes(node.right);
 }
+
 // --- CONTROLS ---
 // Di sini kita update secara global
 function updateTreeVisuals() {
     calculatePositions();
 }
+
 function insertNode() {
     const val = parseInt(document.getElementById('inputValue').value);
     if (isNaN(val)) return;
@@ -304,26 +315,31 @@ function insertNode() {
     document.getElementById('inputValue').value = '';
     updateTreeVisuals();
 }
+
 function searchNode() {
     const val = parseInt(document.getElementById('inputValue').value);
     if (isNaN(val)) return;
     tree.search(val);
     updateTreeVisuals();
 }
+
 function deleteNode() {
     const val = parseInt(document.getElementById('inputValue').value);
     if (isNaN(val)) return;
     tree.delete(val);
     updateTreeVisuals();
 }
+
 function resetTree() {
     tree.root = null;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     setMessage("Tree di-reset.");
 }
+
 function setMessage(msg) {
     document.getElementById('message').innerText = msg;
 }
+
 // Init
 canvas.width = container.clientWidth;
 canvas.height = container.clientHeight;
