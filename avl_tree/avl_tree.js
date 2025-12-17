@@ -21,6 +21,7 @@ class Node {
         this.visIndex = 0;
     }
 }
+
 class AVLTree {
     constructor() {
         this.root = null;
@@ -55,6 +56,8 @@ class AVLTree {
 
     // ================= ROTATION =================
     rightRotate(y) {
+        setMessage(`Right Rotation Pada Node ${y.value}.`);
+
         let x = y.left;
         let T2 = x.right;
 
@@ -85,6 +88,8 @@ class AVLTree {
     }
 
     leftRotate(x) {
+        setMessage(`Left Rotation Pada Node ${x.value}.`);
+
         let y = x.right;
         let T2 = y.left;
 
@@ -116,6 +121,13 @@ class AVLTree {
 
     // ================= INSERT =================
     insert(value) {
+        if (!this.root) {
+            this.root = new Node(value);
+            setMessage(`Insert ${value} Sebagai Root.`);
+            return;
+        }
+
+        setMessage(`Insert ${value} (BST), Lalu Cek Keseimbangan AVL.`);
         this.root = this._insert(this.root, value, null);
     }
 
@@ -131,60 +143,65 @@ class AVLTree {
         } else if (value > node.value) {
             node.right = this._insert(node.right, value, node);
         } else {
-            return node; // nilai duplikat
+            setMessage(`Nilai ${value} Sudah Ada. Insert Dibatalkan.`);
+            return node;
         }
 
         this.updateHeight(node);
-
         let balance = this.getBalance(node);
 
         // ===== ROTATION CASE =====
-
-        // Left Left
         if (balance > 1 && value < node.left.value) {
+            setMessage(`Kasus Left-Left Pada Node ${node.value}.`);
             return this.rightRotate(node);
         }
 
-        // Right Right
         if (balance < -1 && value > node.right.value) {
+            setMessage(`Kasus Right-Right Pada Node ${node.value}.`);
             return this.leftRotate(node);
         }
 
-        // Left Right
         if (balance > 1 && value > node.left.value) {
+            setMessage(`Kasus Left-Right Pada Node ${node.value}.`);
             node.left = this.leftRotate(node.left);
             return this.rightRotate(node);
         }
 
-        // Right Left
         if (balance < -1 && value < node.right.value) {
+            setMessage(`Kasus Right-Left Pada Node ${node.value}.`);
             node.right = this.rightRotate(node.right);
             return this.leftRotate(node);
         }
 
         return node;
     }
+
     // ================= SEARCH =================
     search(value) {
         let current = this.root;
 
         while (current !== null) {
             if (value === current.value) {
+                setMessage(`Ditemukan ${value}. Tidak Perlu Rotasi (AVL).`);
                 return true;
+            }
+
+            if (value < current.value) {
+                current = current.left;
             } else {
-                if (value < current.value) {
-                    current = current.left;
-                } else {
-                    current = current.right;
-                }
+                current = current.right;
             }
         }
+
+        setMessage(`${value} Tidak Ditemukan Di AVL Tree.`);
         return false;
     }
 
     // ================= DELETE =================
     delete(value) {
+        setMessage(`Delete ${value}, Lalu Rebalance AVL.`);
         this.root = this._delete(this.root, value);
+
         if (this.root !== null) {
             this.root.parent = null;
         }
@@ -192,6 +209,7 @@ class AVLTree {
 
     _delete(node, value) {
         if (node === null) {
+            setMessage(`Delete ${value} Gagal (Tidak Ada).`);
             return node;
         }
 
@@ -208,7 +226,8 @@ class AVLTree {
             }
         } 
         else {
-            // node ditemukan
+            setMessage(`Node ${value} Ditemukan. Menghapus...`);
+
             if (node.left === null || node.right === null) {
                 let temp;
 
@@ -226,33 +245,33 @@ class AVLTree {
                     successor = successor.left;
                 }
 
+                setMessage(`Ganti Dengan Successor ${successor.value}.`);
                 node.value = successor.value;
                 node.right = this._delete(node.right, successor.value);
             }
         }
 
         this.updateHeight(node);
-
         let balance = this.getBalance(node);
 
-        // Left Left
         if (balance > 1 && this.getBalance(node.left) >= 0) {
+            setMessage(`Rebalance Left-Left Pada ${node.value}.`);
             return this.rightRotate(node);
         }
 
-        // Left Right
         if (balance > 1 && this.getBalance(node.left) < 0) {
+            setMessage(`Rebalance Left-Right Pada ${node.value}.`);
             node.left = this.leftRotate(node.left);
             return this.rightRotate(node);
         }
 
-        // Right Right
         if (balance < -1 && this.getBalance(node.right) <= 0) {
+            setMessage(`Rebalance Right-Right Pada ${node.value}.`);
             return this.leftRotate(node);
         }
 
-        // Right Left
         if (balance < -1 && this.getBalance(node.right) > 0) {
+            setMessage(`Rebalance Right-Left Pada ${node.value}.`);
             node.right = this.rightRotate(node.right);
             return this.leftRotate(node);
         }

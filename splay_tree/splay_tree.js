@@ -17,6 +17,7 @@ class Node {
         this.visIndex = 0;
     }
 }
+
 class SplayTree {
     constructor() {
         this.root = null;
@@ -121,19 +122,12 @@ class SplayTree {
         let p = null;
         while (z) {
             p = z;
-<<<<<<< Updated upstream
             if (value < z.value) {
                 z = z.left;
             } else if (value > z.value) {
                 z = z.right;
             } else {
-                setMessage(`Nilai ${value} sudah ada. Splaying ke root.`);
-=======
-            if (value < z.value) z = z.left;
-            else if (value > z.value) z = z.right;
-            else {
                 setMessage(`Nilai ${value} Sudah Ada. Splaying Ke Root.`);
->>>>>>> Stashed changes
                 this.splay(z);
                 return;
             }
@@ -148,22 +142,10 @@ class SplayTree {
             newNode.x = container.clientWidth / 2;
             newNode.y = 50;
         }
-<<<<<<< Updated upstream
-
-        if (!p) {
-            this.root = newNode;
-        } else if (value < p.value) {
-            p.left = newNode;
-        } else { 
-            p.right = newNode;
-        }
-        setMessage(`Insert ${value} (BST), lalu Splay ke Root.`);
-=======
         if (!p) this.root = newNode;
         else if (value < p.value) p.left = newNode;
         else p.right = newNode;
         setMessage(`Insert ${value} (BST), Lalu Splay Ke Root.`);
->>>>>>> Stashed changes
         this.splay(newNode);
     }
 
@@ -212,15 +194,8 @@ class SplayTree {
         }
         // Jika tidak ketemu
         if (!z) {
-<<<<<<< Updated upstream
-            setMessage(`Delete ${value} gagal (tidak ada). Splay node terakhir dikunjungi.`);
-            if (lastVisited) {
-                this.splay(lastVisited);
-            } 
-=======
             setMessage(`Delete ${value} Gagal (Tidak Ada). Splay Node Terakhir Dikunjungi.`);
             if (lastVisited) this.splay(lastVisited);
->>>>>>> Stashed changes
             return;
         }
         setMessage(`Menghapus ${value}...`);
@@ -240,34 +215,14 @@ class SplayTree {
             } else {
                 nodeToSplay = parentOfPredecessor;
             }
-<<<<<<< Updated upstream
-
-            setMessage(`Swap dengan Predecessor. Hapus fisik. Splay parent (${nodeToSplay.value}).`);
-=======
             setMessage(`Swap Dengan Predecessor. Hapus Fisik. Splay Parent (${nodeToSplay.value}).`);
->>>>>>> Stashed changes
         } else {
             
             nodeToSplay = z.parent;
-<<<<<<< Updated upstream
-            if (!z.left) {
-                this.replaceNode(z, z.right);
-            } else {
-                this.replaceNode(z, z.left);
-            } 
-
-            if (nodeToSplay) {
-                setMessage(`Node dihapus. Splay parent (${nodeToSplay.value}).`);
-            } else {
-                setMessage(`Root dihapus.`);
-            } 
-            
-=======
             if (!z.left) this.replaceNode(z, z.right);
             else this.replaceNode(z, z.left);
             if (nodeToSplay) setMessage(`Node Dihapus. Splay Parent (${nodeToSplay.value}).`);
             else setMessage(`Root Dihapus.`);
->>>>>>> Stashed changes
         }
 
         if (nodeToSplay) {

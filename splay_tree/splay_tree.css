@@ -1,6 +1,3 @@
-<<<<<<< Updated upstream
-main {
-=======
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap");
 
 * {
@@ -12,7 +9,6 @@ main {
 }
 
 body {
->>>>>>> Stashed changes
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: #f0f2f5;
     margin: 0;
