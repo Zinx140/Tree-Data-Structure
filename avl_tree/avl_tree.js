@@ -226,7 +226,7 @@ class AVLTree {
             }
         } 
         else {
-            setMessage(`Node ${value} Ditemukan. Menghapus...`);
+            setMessage(`Node ${value} Ditemukan. Menghapus`);
 
             if (node.left === null || node.right === null) {
                 let temp;
