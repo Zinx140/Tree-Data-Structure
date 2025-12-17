@@ -4,14 +4,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Tree Simulation</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+
+    <style>
+        @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap");
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Poppins", sans-serif;
+        }
+
+        body {
+            background-image: url('assets/bg.gif');
+            min-height: 100vh;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(3px);
+            z-index: -1;
+        }
+    </style>
 </head>
 
 <body>
+    <div class="container min-vh-100 d-flex flex-column justify-content-center">
+        <div class="text-center mb-4">
+            <h1 class="fw-bold text-dark display-3 display-md-2 display-lg-1">
+                Tree Simulation
+            </h1>
+        </div>
 
-    <h1>Splay Tree Simulation</h1>
-    <a href="splay_tree/splay_tree.html">Go to Splay Tree Simulation</a>
+        <div class="row justify-content-center">
+            <div class="col-12 col-sm-10 col-md-8 col-lg-6">
+                <a href="avl_tree/avl_tree.html" class="btn btn-outline-dark w-100 my-2 rounded-pill fw-semibold py-3">
+                    Go To <b>AVL Tree</b> Simulation
+                </a>
 
+                <a href="splay_tree/splay_tree.html"
+                    class="btn btn-outline-dark w-100 my-2 rounded-pill fw-semibold py-3">
+                    Go To <b>Splay Tree</b> Simulation
+                </a>
+
+                <a href="trie_tree/trie_tree.html"
+                    class="btn btn-outline-dark w-100 my-2 rounded-pill fw-semibold py-3">
+                    Go To <b>Trie Tree</b> Simulation
+                </a>
+
+                <a href="treap_tree/treap_tree.html"
+                    class="btn btn-outline-dark w-100 my-2 rounded-pill fw-semibold py-3">
+                    Go To <b>Treap Tree</b> Simulation
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>
