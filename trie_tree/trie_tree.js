@@ -179,7 +179,12 @@ function calculatePositions() {
         const startX = Math.max(100, (container.clientWidth - totalWidth) / 2);
         
         nodes.forEach((node, index) => {
-            node.targetX = startX + (index * HORIZONTAL_SPACING);
+            // Untuk root (level 0), pusatkan di tengah canvas
+            if (level === 0) {
+                node.targetX = container.clientWidth / 2;
+            } else {
+                node.targetX = startX + (index * HORIZONTAL_SPACING);
+            }
             node.targetY = 60 + (level * VERTICAL_SPACING);
         });
     });
@@ -216,7 +221,8 @@ function resizeCanvas() {
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    if (trie.root) {
+    // Hanya render jika ada children (ada kata yang diinsert)
+    if (trie.root && Object.keys(trie.root.children).length > 0) {
         updateAnimation(trie.root);
         drawConnections(trie.root);
         drawNodes(trie.root);
