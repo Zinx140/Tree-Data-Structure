@@ -142,9 +142,13 @@ class SplayTree {
             newNode.x = container.clientWidth / 2;
             newNode.y = 50;
         }
-        if (!p) this.root = newNode;
-        else if (value < p.value) p.left = newNode;
-        else p.right = newNode;
+        if (!p) {
+            this.root = newNode;
+        } else if (value < p.value) {
+            p.left = newNode;
+        } else {
+            p.right = newNode;
+        }
         setMessage(`Insert ${value} (BST), Lalu Splay Ke Root.`);
         this.splay(newNode);
     }
@@ -219,10 +223,18 @@ class SplayTree {
         } else {
             
             nodeToSplay = z.parent;
-            if (!z.left) this.replaceNode(z, z.right);
-            else this.replaceNode(z, z.left);
-            if (nodeToSplay) setMessage(`Node Dihapus. Splay Parent (${nodeToSplay.value}).`);
-            else setMessage(`Root Dihapus.`);
+            if (!z.left) {
+                this.replaceNode(z, z.right);
+            } else {
+                this.replaceNode(z, z.left);
+            } 
+
+            if (nodeToSplay) {
+                setMessage(`Node Dihapus. Splay Parent (${nodeToSplay.value}).`);
+            } 
+            else {
+                setMessage(`Root Dihapus.`);
+            }
         }
 
         if (nodeToSplay) {
