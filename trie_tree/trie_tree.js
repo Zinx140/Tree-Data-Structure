@@ -125,23 +125,7 @@ class Trie {
         return false;
     }
 
-    // ================= UTILITY =================
-    startsWith(prefix) {
-        prefix = prefix.toLowerCase().trim();
-        let current = this.root;
-
-        for (let i = 0; i < prefix.length; i++) {
-            const char = prefix[i];
-            
-            if (!current.children[char]) {
-                return false;
-            }
-            
-            current = current.children[char];
-        }
-
-        return true;
-    }
+   
 }
 
 // --- VISUALISASI ---
