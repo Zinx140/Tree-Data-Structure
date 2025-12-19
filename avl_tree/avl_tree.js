@@ -33,9 +33,10 @@ class AVLTree {
             return 0;
         } else {
             return node.height;
-        }
+        } 
     }
 
+    // Update Height Setelah Modifikasi
     updateHeight(node) {
         let leftHeight = this.getHeight(node.left);
         let rightHeight = this.getHeight(node.right);
@@ -47,6 +48,7 @@ class AVLTree {
         }
     }
 
+    // Hasil Pengurangan Dari Node Kiri - Kanan (Pengecekan Balance)
     getBalance(node) {
         if (node === null) {
             return 0;
@@ -121,23 +123,27 @@ class AVLTree {
 
     // ================= INSERT =================
     insert(value) {
+        // Root Kosong
         if (!this.root) {
             this.root = new Node(value);
             setMessage(`Insert ${value} Sebagai Root.`);
             return;
         }
 
+        // Insert Biasa Lalu Rebalance
         setMessage(`Insert ${value} (BST), Lalu Cek Keseimbangan AVL.`);
         this.root = this._insert(this.root, value, null);
     }
 
     _insert(node, value, parent) {
+        // Base Case
         if (node === null) {
             let newNode = new Node(value);
             newNode.parent = parent;
             return newNode;
         }
 
+        // Recursive Insert
         if (value < node.value) {
             node.left = this._insert(node.left, value, node);
         } else if (value > node.value) {
@@ -182,7 +188,7 @@ class AVLTree {
 
         while (current !== null) {
             if (value === current.value) {
-                setMessage(`Ditemukan ${value}. Tidak Perlu Rotasi (AVL).`);
+                setMessage(`Ditemukan ${value}.`);
                 return true;
             }
 
@@ -202,24 +208,29 @@ class AVLTree {
         setMessage(`Delete ${value}, Lalu Rebalance AVL.`);
         this.root = this._delete(this.root, value);
 
+        // Pastikan Root Tidak Memiliki Parent
         if (this.root !== null) {
             this.root.parent = null;
         }
     }
 
     _delete(node, value) {
+        // Base Case
         if (node === null) {
             setMessage(`Delete ${value} Gagal (Tidak Ada).`);
             return node;
         }
 
         if (value < node.value) {
+            // Recursive Ke Kiri
             node.left = this._delete(node.left, value);
+            // Pengecekan Supaya Parent Tetap Benar
             if (node.left !== null) {
                 node.left.parent = node;
             }
         } 
         else if (value > node.value) {
+            // Recursive Ke Kanan
             node.right = this._delete(node.right, value);
             if (node.right !== null) {
                 node.right.parent = node;
@@ -228,6 +239,7 @@ class AVLTree {
         else {
             setMessage(`Node ${value} Ditemukan. Menghapus`);
 
+            // Node Dengan Satu Anak Atau Tidak Ada Anak
             if (node.left === null || node.right === null) {
                 let temp;
 
@@ -239,7 +251,9 @@ class AVLTree {
 
                 return temp;
             } 
+            // Node Dengan Dua Anak
             else {
+                // Mengambil Successor (Nilai Terkecil Di Subtree Kanan)
                 let successor = node.right;
                 while (successor.left !== null) {
                     successor = successor.left;
